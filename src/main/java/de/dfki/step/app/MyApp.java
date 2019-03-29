@@ -1,4 +1,4 @@
-package app;
+package de.dfki.step.app;
 
 
 import org.slf4j.Logger;

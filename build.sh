@@ -1,5 +1,6 @@
-git submodule update --init --recursive
-mvn clean install -f ../external/tecs/libtecs/java/pom.xml -DskipTests
-mvn install -f ../src/pom.xml 
+mvn clean install -f external/step-dp/src/pom.xml
+mvn package
+java -Dde.dfki.step.dialog.MyDialog -jar target/mydialog.jar
+
 echo "Finished. Press enter to coninue."
 read
