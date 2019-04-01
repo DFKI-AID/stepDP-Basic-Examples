@@ -66,17 +66,15 @@ public class MyDialog40 extends Dialog {
         @Override
         public Set<String> getActiveRules(String state) {
             if(Objects.equals(state, "Waiting")) {
-                List.of("incomingCall",  "two");
+                return Set.of("incomingCall");
             }
             if(Objects.equals(state, "Confirm")) {
-                List.of();
+                return Set.of("confirmOrder", "modifyOrder");
             }
             if(Objects.equals(state, "OrderPlacement")) {
-                List.of();
+                return Set.of("placeOrder", "finishOrder");
             }
-            if(Objects.equals(state, "Waiting")) {
-                List.of();
-            }
+
 
             //log.warn("no rules for state {}", state);
             return Collections.EMPTY_SET;
