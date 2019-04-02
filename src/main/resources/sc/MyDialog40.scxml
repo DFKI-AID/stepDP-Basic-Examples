@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" binding="early" name="MyDialog40.scxml" qt:editorversion="4.8.2" xmlns:qt="http://www.qt.io/2015/02/scxml-ext" initial="Waiting">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" binding="early" xmlns:qt="http://www.qt.io/2015/02/scxml-ext" name="MyDialog40.scxml" qt:editorversion="4.8.2" initial="Waiting">
     <qt:editorinfo initialGeometry="66.28;42.46;-20;-20;40;40"/>
     <state id="Waiting">
         <qt:editorinfo scenegeometry="125.32;156.38;65.32;106.38;120;100" geometry="125.32;156.38;-60;-50;120;100"/>
@@ -15,14 +15,20 @@
         <transition type="external" event="finish_order" target="Confirm">
             <qt:editorinfo startTargetFactors="82.34;67.01"/>
         </transition>
+        <onentry>
+            <script src="takeNextOrder"/>
+        </onentry>
     </state>
     <state id="Confirm">
         <qt:editorinfo scenegeometry="244.42;396.66;184.42;346.66;120;100" geometry="244.42;396.66;-60;-50;120;100"/>
         <transition type="external" event="confirm_order" target="Waiting">
-            <qt:editorinfo localGeometry="-42.47;-81.82" movePoint="-20.71;-44.53"/>
+            <qt:editorinfo movePoint="-20.71;-44.53" localGeometry="-42.47;-81.82"/>
         </transition>
         <transition type="external" event="modify_order" target="OrderPlacement">
             <qt:editorinfo endTargetFactors="20.50;71.43"/>
         </transition>
+        <onentry>
+            <script/>
+        </onentry>
     </state>
 </scxml>

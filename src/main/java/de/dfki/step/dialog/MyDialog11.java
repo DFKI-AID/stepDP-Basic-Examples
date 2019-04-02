@@ -67,7 +67,7 @@ public class MyDialog11 extends Dialog {
                 createGreetingsRule(newMinConfidence);
                 return;
             } else {
-                // we adjust the rule by increasin the necessary confidence to trigger it again
+                // we adjust the rule by increasing the necessary confidence to trigger it again
                 double newMinConfidence = Math.max(0.7, minConfidence + 0.1);
                 createGreetingsRule(newMinConfidence);
 
