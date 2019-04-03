@@ -23,7 +23,7 @@ public class MyDialog40 extends Dialog {
         TokenComponent tc = retrieveComponent(TokenComponent.class);
         try {
             pizzaBehavior = new PizzaBehavior();
-            addComponent("pizza_behavior", pizzaBehavior);
+            addComponent(pizzaBehavior);
         } catch (URISyntaxException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

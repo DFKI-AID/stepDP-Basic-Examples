@@ -29,7 +29,7 @@ public class MyDialog30 extends Dialog {
         RuleSystemComponent rsc = retrieveComponent(RuleSystemComponent.class);
         TokenComponent tc = retrieveComponent(TokenComponent.class);
         ConfidenceAdapationComponent cac = new ConfidenceAdapationComponent();
-        this.addComponent("cac", cac);
+        this.addComponent(cac);
 
         rsc.addRule("swipe_gesture", () -> {
             List<Token> gestureIntents = tc.getTokens().stream()
