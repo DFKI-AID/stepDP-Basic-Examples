@@ -69,6 +69,8 @@ $.ajax({
 curl localhost:50000/confidence/swipe_gesture -XPOST -d '{"confidence":0.7}' -H "Content-Type: application/json"
 ```
 
+If you want to add html / js / ..., files, just put them into resurces/static.
+
 
 ### State Charts: Use SCXML for higher dialog modelling
 - See
@@ -77,17 +79,37 @@ curl localhost:50000/confidence/swipe_gesture -XPOST -d '{"confidence":0.7}' -H 
 
 
 
-### Rules for Meta-Dialog
-
-
-
-
 
 ### Fusion: Create Intents from inputs.
+See [MyDialog50](src/main/java/de/dfki/step/dialo/MyDialog50.java). Combine focus + speech and focus + gesture to rotate 3D model.
 
-### Output
+Send as inputs from the web gui to see the output in the terminal.
+```json
+{
+  "intent": "rotate",
+  "confidence": 0.6,
+  "direction":"up"
+}
+```
+or
+```json
+{
+  "gesture": "down",
+  "confidence": 0.6
+}
+```
+
+
+
+### Dialog Coordination and Output
+This examples extend the fusion example. 
+
 
 ### Schemas
+
+
+### Rules for Meta-Dialog
+
 
 ### Overwrite Components
 
