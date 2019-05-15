@@ -14,6 +14,7 @@
         </transition>
         <transition type="external" event="finish_order" target="Confirm">
             <qt:editorinfo startTargetFactors="82.34;67.01"/>
+            <script src="repeatOrder"/>
         </transition>
         <onentry>
             <script src="takeNextOrder"/>
@@ -23,6 +24,7 @@
         <qt:editorinfo scenegeometry="244.42;396.66;184.42;346.66;120;100" geometry="244.42;396.66;-60;-50;120;100"/>
         <transition type="external" event="confirm_order" target="Waiting">
             <qt:editorinfo movePoint="-20.71;-44.53" localGeometry="-42.47;-81.82"/>
+            <script/>
         </transition>
         <transition type="external" event="modify_order" target="OrderPlacement">
             <qt:editorinfo endTargetFactors="20.50;71.43"/>
