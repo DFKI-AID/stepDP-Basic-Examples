@@ -29,7 +29,8 @@ public class MyDialog extends Dialog {
     public MyDialog() {
         try {
             TaskBehavior taskBehavior = new TaskBehavior();
-            this.addComponent("task_behavior", taskBehavior);
+            this.addComponent(taskBehavior);
+            this.addComponent(new SimpleBehavior());
 
         } catch (URISyntaxException e) {
             throw new RuntimeException("Could not load task behavior", e);
@@ -46,7 +47,7 @@ public class MyDialog extends Dialog {
         mf.createGreetingsRule();
 
         TimeBehavior timeBehavior = new TimeBehavior();
-        this.addComponent("time_behavior", timeBehavior);
+        this.addComponent(timeBehavior);
 
 
         mf.createRepeatRule("request_repeat_tts", "I did not say anything.");
@@ -98,7 +99,7 @@ public class MyDialog extends Dialog {
         //forward all input tokens that already have an intent
         InputNode intentNode = new InputNode(t -> t.has("intent"));
         fc.addFusionNode("intent_forward", intentNode, match -> {
-            return match.getTokens().get(0);
+            return match.getTokens().iterator().next();
         });
 
 

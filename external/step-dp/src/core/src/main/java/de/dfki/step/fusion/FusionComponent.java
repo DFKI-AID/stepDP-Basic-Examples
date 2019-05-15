@@ -43,6 +43,7 @@ public class FusionComponent implements Component {
         if(tokens.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
+        //TODO impl additional visitor that checks if a InputNode is used at most once for a tree
 
         List<Token> intents = new ArrayList<>();
         var mv = new MatchVisitor();
@@ -114,7 +115,7 @@ public class FusionComponent implements Component {
     }
 
     /**
-     * Builds a default token with the given intent, origin and confidence from the match
+     * Builds a default token with the given intent, origin, confidence and timestamps from the match
      * @param match
      * @param intent
      * @return
@@ -122,11 +123,21 @@ public class FusionComponent implements Component {
     public static Token defaultIntent(Match match, String intent) {
         List<String> origin = FusionComponent.mergeOrigins(match.getTokens());
         Optional<Double> confidence = FusionComponent.mergeConfidence(match.getTokens());
+        Optional<Long> minTimestamp = match.getTokens().stream()
+                .filter(t -> t.has("timestamp", Long.class))
+                .map(t -> t.get("timestamp", Long.class).get())
+                .reduce((x,y) -> Math.min(x,y));
+        Optional<Long> maxTimestamp = match.getTokens().stream()
+                .filter(t -> t.has("timestamp", Long.class))
+                .map(t -> t.get("timestamp", Long.class).get())
+                .reduce((x,y) -> Math.max(x,y));
 
         Token token = new Token()
                 .add("intent", intent)
                 .add("origin", origin)
-                .addIfPresent("confidence", confidence);
+                .addIfPresent("confidence", confidence)
+                .addIfPresent("timestamp.min", minTimestamp)
+                .addIfPresent("timestamp.max", maxTimestamp);
         return token;
     }
 }

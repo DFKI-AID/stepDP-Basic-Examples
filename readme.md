@@ -26,7 +26,7 @@ java -Ddialog.name=de.dfki.step.dialog.MyDialog10 -jar target/mydialog.jar
 
 ### Rule-Based Dialog with Intent from Web-Gui
 This example prints *Hello* into the terminal if a *greetings* intent was received.
-See [MyDialog10.java](/src/main/java/de/dfki/step/dialo/MyDialog10.java). 
+See [MyDialog10.java](src/main/java/de/dfki/step/dialog/MyDialog10.java). 
 
 After starting, visit the [web gui](http://localhost:50000/) and open the *Input* tab. Insert
 ```json
@@ -40,7 +40,7 @@ and press sendIntent.
 
 - Task 1: Filter for the confidence: e.g. ignore if confidence is < 0.4
 - Task 2: Allow greetings at most x times per second to occur. For a solution, check the function createGreetingsRule in the [MetaFactory](src/main/java/de/dfki/step/dialog/MetaFactory.java).
-- Task 3: Decrease the necessary confidence if it was too low to trigger a rule. See [MyDialog11.java](/src/main/java/de/dfki/step/dialo/MyDialog11.java) for a solution.
+- Task 3: Decrease the necessary confidence if it was too low to trigger a rule. See [MyDialog11.java](src/main/java/de/dfki/step/dialo/MyDialog11.java) for a solution.
 
 ### Rule Coordination
 input has the same origin, play around with priority. see dialog
@@ -69,6 +69,8 @@ $.ajax({
 curl localhost:50000/confidence/swipe_gesture -XPOST -d '{"confidence":0.7}' -H "Content-Type: application/json"
 ```
 
+If you want to add html / js / ..., files, just put them into resurces/static.
+
 
 ### State Charts: Use SCXML for higher dialog modelling
 - See
@@ -77,17 +79,37 @@ curl localhost:50000/confidence/swipe_gesture -XPOST -d '{"confidence":0.7}' -H 
 
 
 
-### Rules for Meta-Dialog
-
-
-
-
 
 ### Fusion: Create Intents from inputs.
+See [MyDialog50](src/main/java/de/dfki/step/dialo/MyDialog50.java). Combine focus + speech and focus + gesture to rotate 3D model.
 
-### Output
+Send as inputs from the web gui to see the output in the terminal.
+```json
+{
+  "intent": "rotate",
+  "confidence": 0.6,
+  "direction":"up"
+}
+```
+or
+```json
+{
+  "gesture": "down",
+  "confidence": 0.6
+}
+```
+
+
+
+### Dialog Coordination and Output
+This examples extend the fusion example. 
+
 
 ### Schemas
+
+
+### Rules for Meta-Dialog
+
 
 ### Overwrite Components
 
