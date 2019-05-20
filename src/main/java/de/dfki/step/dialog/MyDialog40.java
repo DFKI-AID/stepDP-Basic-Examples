@@ -4,7 +4,7 @@ import de.dfki.step.core.ComponentManager;
 import de.dfki.step.core.Token;
 import de.dfki.step.core.TokenComponent;
 import de.dfki.step.rengine.Rule;
-import de.dfki.step.rengine.RuleSystemComponent;
+import de.dfki.step.rengine.RuleComponent;
 import de.dfki.step.sc.SimpleStateBehavior;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class MyDialog40 extends Dialog {
     private PizzaBehavior pizzaBehavior;
 
     public MyDialog40() {
-        RuleSystemComponent rsc = retrieveComponent(RuleSystemComponent.class);
+        RuleComponent rsc = retrieveComponent(RuleComponent.class);
         TokenComponent tc = retrieveComponent(TokenComponent.class);
         try {
             pizzaBehavior = new PizzaBehavior();
@@ -50,7 +50,7 @@ public class MyDialog40 extends Dialog {
         @Override
         public void init(ComponentManager cm) {
             super.init(cm);
-            RuleSystemComponent rsc = cm.retrieveComponent(RuleSystemComponent.class);
+            RuleComponent rsc = cm.retrieveComponent(RuleComponent.class);
             TokenComponent tc = cm.retrieveComponent(TokenComponent.class);
 
             rsc.addRule("incomingCall", () -> {

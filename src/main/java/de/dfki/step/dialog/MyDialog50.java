@@ -7,8 +7,8 @@ import de.dfki.step.core.TokenComponent;
 import de.dfki.step.fusion.FusionComponent;
 import de.dfki.step.fusion.InputNode;
 import de.dfki.step.fusion.ParallelNode;
-import de.dfki.step.rengine.CoordinationComponent;
-import de.dfki.step.rengine.RuleSystemComponent;
+import de.dfki.step.core.CoordinationComponent;
+import de.dfki.step.rengine.RuleComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +22,7 @@ public class MyDialog50 extends Dialog {
     private static final Logger log = LoggerFactory.getLogger(MyDialog50.class);
 
     public MyDialog50() {
-        RuleSystemComponent rsc = retrieveComponent(RuleSystemComponent.class);
+        RuleComponent rsc = retrieveComponent(RuleComponent.class);
         TokenComponent tc = retrieveComponent(TokenComponent.class);
         FusionComponent fc = retrieveComponent(FusionComponent.class);
         CoordinationComponent cc = retrieveComponent(CoordinationComponent.class);

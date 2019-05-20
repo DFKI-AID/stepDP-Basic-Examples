@@ -3,7 +3,7 @@ package de.dfki.step.dialog;
 import de.dfki.step.core.Schema;
 import de.dfki.step.core.Token;
 import de.dfki.step.core.TokenComponent;
-import de.dfki.step.rengine.RuleSystemComponent;
+import de.dfki.step.rengine.RuleComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,11 +15,11 @@ import java.util.Optional;
  */
 public class MyDialog11 extends Dialog {
     private static final Logger log = LoggerFactory.getLogger(MyDialog11.class);
-    private RuleSystemComponent rsc;
+    private RuleComponent rsc;
     private TokenComponent tc;
 
     public MyDialog11() {
-        rsc = retrieveComponent(RuleSystemComponent.class);
+        rsc = retrieveComponent(RuleComponent.class);
         tc = retrieveComponent(TokenComponent.class);
 
         createGreetingsRule(0.5);

@@ -1,7 +1,7 @@
 package de.dfki.step.dialog;
 
 import de.dfki.step.core.TokenComponent;
-import de.dfki.step.rengine.RuleSystemComponent;
+import de.dfki.step.rengine.RuleComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +14,7 @@ public class MyDialog20 extends Dialog {
 
     public MyDialog20() {
         // rules are registered in the RuleSystemComponent
-        RuleSystemComponent rsc = retrieveComponent(RuleSystemComponent.class);
+        RuleComponent rsc = retrieveComponent(RuleComponent.class);
         // tokens are a way to pass data from e.g. the input into the dialog
         TokenComponent tc = retrieveComponent(TokenComponent.class);
 

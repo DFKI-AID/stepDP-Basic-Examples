@@ -4,16 +4,14 @@ import de.dfki.step.core.Component;
 import de.dfki.step.core.ComponentManager;
 import de.dfki.step.core.Token;
 import de.dfki.step.core.TokenComponent;
-import de.dfki.step.kb.AttributeValue;
 import de.dfki.step.kb.Entity;
 import de.dfki.step.output.PresentationComponent;
-import de.dfki.step.rengine.CoordinationComponent;
-import de.dfki.step.rengine.RuleSystemComponent;
+import de.dfki.step.rengine.RuleComponent;
 
 
 
 public class SlotFillingComponent implements Component {
-    private RuleSystemComponent rsc;
+    private RuleComponent rsc;
     private TokenComponent tc;
     private PresentationComponent pc;
     private Entity frameInfo;
@@ -24,7 +22,7 @@ public class SlotFillingComponent implements Component {
 
     @Override
     public void init(ComponentManager cm) {
-        rsc = cm.retrieveComponent(RuleSystemComponent.class);
+        rsc = cm.retrieveComponent(RuleComponent.class);
         tc = cm.retrieveComponent(TokenComponent.class);
         pc = cm.retrieveComponent(PresentationComponent.class);
 

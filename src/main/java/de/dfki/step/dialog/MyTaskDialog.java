@@ -1,30 +1,66 @@
 package de.dfki.step.dialog;
 
 import de.dfki.step.core.InputComponent;
-import de.dfki.step.core.Schema;
 import de.dfki.step.core.Token;
 import de.dfki.step.core.TokenComponent;
 import de.dfki.step.fusion.FusionComponent;
-import de.dfki.step.fusion.InputNode;
-import de.dfki.step.fusion.ParallelNode;
-import de.dfki.step.rengine.CoordinationComponent;
-import de.dfki.step.rengine.RuleSystemComponent;
+import de.dfki.step.core.CoordinationComponent;
+import de.dfki.step.kb.DataStore;
+import de.dfki.step.output.PresentationComponent;
+import de.dfki.step.rengine.RuleComponent;
+import de.dfki.step.resolution.ResolutionComponent;
+import de.dfki.step.taskmodel.*;
+import de.dfki.step.util.Vector3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
 
 public class MyTaskDialog extends Dialog {
     private static final Logger log = LoggerFactory.getLogger(MyTaskDialog.class);
 
     public MyTaskDialog() {
+        DataStore ds = new DataStore();
+        ds.checkMutability(true);
 
-        RuleSystemComponent rsc = retrieveComponent(RuleSystemComponent.class);
+        MyDataEntry human1 = new MyDataEntry(ds, "w1");
+        human1.setVisualFocus("box3");
+        human1.setPosition(new Vector3(0, 0, 0));
+        human1.save();
+
+        MyDataEntry robot1 = new MyDataEntry(ds, "r1");
+        robot1.setPosition(new Vector3(2.0, 2.0, 2.0));
+        robot1.save();
+
+        MyDataEntry box1 = new MyDataEntry(ds, "box1");
+        box1.setColors(List.of("red"));
+        box1.setSize("small");
+        box1.setPosition(new Vector3(1.0, 1.0, 1.0));
+
+        MyDataEntry box2 = new MyDataEntry(ds, "box2");
+        box2.setColors(List.of("blue"));
+        box2.setSize("small");
+        box2.setPosition(new Vector3(-1.0, -1.0, -1.0));
+
+        MyDataEntry box3 = new MyDataEntry(ds, "box3");
+        box3.setColors(List.of("red"));
+        box3.setSize("large");
+        box3.setPosition(new Vector3(2.0, 3.0, 2.0));
+
+
+
+        RuleComponent rc = retrieveComponent(RuleComponent.class);
         TokenComponent tc = retrieveComponent(TokenComponent.class);
         FusionComponent fc = retrieveComponent(FusionComponent.class);
-
+        PresentationComponent pc = retrieveComponent(PresentationComponent.class);
         CoordinationComponent cc = retrieveComponent(CoordinationComponent.class);
-        this.initFusion(fc);
+        ResolutionComponent resc = retrieveComponent(ResolutionComponent.class);
+
+      //  MetaFactory mf = new MetaFactory();
+
+        //this.initFusion(fc);
         // Unimodal inputs are stored in the InputComponent.
         // Your external sensor should add tokens via ic.addTokens(...)
         // Tokens are removed if they are consumed, or if they are too old.
@@ -33,27 +69,64 @@ public class MyTaskDialog extends Dialog {
 
 
 
-
-        rsc.addRule("rotateModel", () -> {
-            tc.getTokens().stream()
-                    .filter(t -> t.payloadEquals("intent", "rotate_model"))
-                    .filter(t -> t.get("direction", String.class).isPresent())
-                    .findAny()
-                    .ifPresent(t -> {
-                        cc.add(() -> {
-                            log.info("rotating: {}", t.get("direction", String.class).get());
-                        }).attachOrigin(t);
-
-                    });
-        });
-
-
         // here we simulate the focus from an external component
-        var fsc = new FocusSimulationComponent();
+    /*    var fsc = new FocusSimulationComponent();
         this.addComponent(fsc);
         // set the priority such that it will executed before the input component
         setPriority(fsc.getId(), getPriority(ic.getId()) -1);
+*/
+        var trc = new TaskLearningComponent(ds, robot1);
+        this.addComponent(trc);
+
+        rc.addRule("executeTask", () -> {
+            // check for tokens with the intent 'startTask'
+            Optional<Token> token = tc.getTokens().stream()
+                    .filter(t -> t.payloadEquals("intent", "executeTask"))
+                    .findFirst();
+            if (!token.isPresent()) {
+                return;
+            }
+
+            Token executeToken = token.get();
+            if (!executeToken.get("taskname").isPresent()) {
+                cc.add("executeTask", () -> {
+                    if (robot1.getTasks().isEmpty()) {
+                        String taskname =  ((RootTask) robot1.getTasks().get(0)).getName();
+                        robot1.getTasks().get(0).execute();
+                        pc.present(PresentationComponent.simpleTTS("Okay I will execute the task: " + taskname));
+                    }
+                }).attachOrigin(executeToken);
+            }else {
+                cc.add("executeTask_else", () -> {
+                    Task eTask = null;
+                    for(Task t: robot1.getTasks()) {
+                        if(t instanceof RootTask) {
+                            if(((RootTask) t).getName().equals(executeToken.get("taskname").orElse(""))) {
+                               eTask = t;
+                               break;
+                            }
+                        }
+                    }
+                    if(eTask != null) {
+                        eTask.execute();
+                        pc.present(PresentationComponent.simpleTTS("Okay I will execute the task: " + executeToken.get("taskname").orElse("")));
+                    }
+                }).attachOrigin(executeToken);
+
+
+
+            }
+
+        });
+
+
+
+
     }
+
+
+
+
 
     /**
      * Create fusion rule that combines gestures and focus into 'rotate_model' intents.
@@ -62,7 +135,7 @@ public class MyTaskDialog extends Dialog {
      * Creates a fusion rule that combines speech and focus into 'rotate_model' intents.
      * @param fc
      */
-    public void initFusion(FusionComponent fc) {
+   /* public void initFusion(FusionComponent fc) {
         // looking for up and down gesture
         Schema gestureSchema = Schema.builder()
                 .add(t -> t.payloadEqualsOneOf("gesture", "down", "up")).build();
@@ -134,6 +207,6 @@ public class MyTaskDialog extends Dialog {
 
 
 
-    }
+    }*/
 }
 

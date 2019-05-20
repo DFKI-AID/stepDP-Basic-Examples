@@ -4,7 +4,7 @@ import de.dfki.step.core.Component;
 import de.dfki.step.core.ComponentManager;
 import de.dfki.step.core.Token;
 import de.dfki.step.core.TokenComponent;
-import de.dfki.step.rengine.RuleSystemComponent;
+import de.dfki.step.rengine.RuleComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ public class MyDialog30 extends Dialog {
     private static final Logger log = LoggerFactory.getLogger(MyDialog30.class);
 
     public MyDialog30() {
-        RuleSystemComponent rsc = retrieveComponent(RuleSystemComponent.class);
+        RuleComponent rsc = retrieveComponent(RuleComponent.class);
         TokenComponent tc = retrieveComponent(TokenComponent.class);
         ConfidenceAdapationComponent cac = new ConfidenceAdapationComponent();
         this.addComponent(cac);
