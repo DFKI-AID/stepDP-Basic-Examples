@@ -5,7 +5,9 @@ import de.dfki.step.core.Token;
 import de.dfki.step.core.TokenComponent;
 import de.dfki.step.fusion.FusionComponent;
 import de.dfki.step.core.CoordinationComponent;
+import de.dfki.step.kb.DataEntry;
 import de.dfki.step.kb.DataStore;
+import de.dfki.step.kb.Entity;
 import de.dfki.step.output.PresentationComponent;
 import de.dfki.step.rengine.RuleComponent;
 import de.dfki.step.resolution.ResolutionComponent;
@@ -15,20 +17,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class MyTaskDialog extends Dialog {
     private static final Logger log = LoggerFactory.getLogger(MyTaskDialog.class);
 
     public MyTaskDialog() {
-        DataStore ds = new DataStore();
+        DataStore<Object> ds = new DataStore();
         ds.checkMutability(true);
 
         MyDataEntry human1 = new MyDataEntry(ds, "w1");
         human1.setVisualFocus("box3");
         human1.setPosition(new Vector3(0, 0, 0));
+        human1.setHuman(true);
         human1.save();
+
 
         MyDataEntry robot1 = new MyDataEntry(ds, "r1");
         robot1.setPosition(new Vector3(2.0, 2.0, 2.0));
@@ -38,25 +46,52 @@ public class MyTaskDialog extends Dialog {
         box1.setColors(List.of("red"));
         box1.setSize("small");
         box1.setPosition(new Vector3(1.0, 1.0, 1.0));
+        box1.set("entity_type", "box");
+        box1.setPhysicalEntity(true);
+        box1.save();
 
         MyDataEntry box2 = new MyDataEntry(ds, "box2");
         box2.setColors(List.of("blue"));
         box2.setSize("small");
         box2.setPosition(new Vector3(-1.0, -1.0, -1.0));
+        box2.set("entity_type", "box");
+        box2.setPhysicalEntity(true);
+        box2.save();
 
         MyDataEntry box3 = new MyDataEntry(ds, "box3");
         box3.setColors(List.of("red"));
         box3.setSize("large");
         box3.setPosition(new Vector3(2.0, 3.0, 2.0));
+        box3.set("entity_type", "box");
+        box3.setPhysicalEntity(true);
+        box3.save();
 
-
+        System.out.println("KB: " + ds.getAll().toString());
 
         RuleComponent rc = retrieveComponent(RuleComponent.class);
         TokenComponent tc = retrieveComponent(TokenComponent.class);
         FusionComponent fc = retrieveComponent(FusionComponent.class);
         PresentationComponent pc = retrieveComponent(PresentationComponent.class);
         CoordinationComponent cc = retrieveComponent(CoordinationComponent.class);
-        ResolutionComponent resc = retrieveComponent(ResolutionComponent.class);
+
+        var resc = new ResolutionComponent();
+      //  Predicate<MyDataEntry> physicalObjPred = e -> e.isPhysicalEntity();
+       // Predicate<MyDataEntry> humanPred = MyDataEntry::isHuman;
+
+        List<DataEntry> physicalObjects = ds.primaryIds()
+                .map(id -> new MyDataEntry(ds, id))
+                .filter(d -> d.isPhysicalEntity())
+                .collect(Collectors.toList());
+
+        Collection<DataEntry> humans = ds.primaryIds()
+                .map(id -> new MyDataEntry(ds, id))
+                .filter(d -> d.isHuman())
+                .collect(Collectors.toList());
+
+      //  resc.setPersonSupplier(() -> humans);
+        resc.setPhysicalEntitySupplier(() -> physicalObjects);
+        this.addComponent(resc);
+   //     setPriority(resc.getId(), 250);
 
       //  MetaFactory mf = new MetaFactory();
 
@@ -94,6 +129,7 @@ public class MyTaskDialog extends Dialog {
                         String taskname =  ((RootTask) robot1.getTasks().get(0)).getName();
                         robot1.getTasks().get(0).execute();
                         pc.present(PresentationComponent.simpleTTS("Okay I will execute the task: " + taskname));
+
                     }
                 }).attachOrigin(executeToken);
             }else {
@@ -118,7 +154,6 @@ public class MyTaskDialog extends Dialog {
             }
 
         });
-
 
 
 

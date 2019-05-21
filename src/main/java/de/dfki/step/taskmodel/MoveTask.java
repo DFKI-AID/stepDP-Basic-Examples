@@ -1,7 +1,7 @@
 package de.dfki.step.taskmodel;
 
 
-
+import de.dfki.step.output.PresentationComponent;
 
 public class MoveTask extends AtomicTask {
 

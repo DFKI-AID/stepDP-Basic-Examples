@@ -68,7 +68,17 @@ public class MyDataEntry extends DataEntry {
         return get("tasks", List.class).orElse(Collections.EMPTY_LIST);
     }
 
+    public boolean isPhysicalEntity() {
+        return get("isPhysicalEntity", Boolean.class).orElse(false);
+    }
 
+    public void setPhysicalEntity(Boolean val) { set("isHuman", val);}
+
+    public boolean isHuman() {
+        return  get("isHuman", Boolean.class).orElse(false);
+    }
+
+    public void setHuman(Boolean val) { set("isHuman", val);}
 
 }
 
