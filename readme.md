@@ -78,7 +78,7 @@ An important class is the [Token](src/main/java/de/dfki/step/core/Token.java). I
 - The structure of a rule is void -> void: Hence, Condition checking and execution is done through additional objects that are captured in the context of the function. In general, they have access to the dialog object such that the knowledge base can be accessed etc...
 - deprecated (add functionality to coordinator class): execution order is based on priority value. rules with higher priority value are executed later.
 - The token set is empty for each iteration and filled by the rules.
-- **TODO** different type of rules: meta, semi-meta, app
+- **TODO** different type of rules: meta, semi-meta, de.dfki.step.app
 - Volatile rules are rules that will be removed 'on a state change'. whereby 'state change' depends on the behavior impl.
 - See: [example](https://lns-90165.sb.dfki.de/gitlab/i40/tractat/step-dp/step-examples/blob/master/src/main/java/de/dfki/step/dialog/MyDialog10.java)
 
