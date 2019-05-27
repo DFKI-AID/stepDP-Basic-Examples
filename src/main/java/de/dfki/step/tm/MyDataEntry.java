@@ -1,15 +1,13 @@
-package de.dfki.step.taskmodel;
+package de.dfki.step.tm;
 
 import de.dfki.step.kb.DataEntry;
 import de.dfki.step.kb.DataStore;
+import de.dfki.step.taskmodel.Task;
 import de.dfki.step.util.Vector3;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-
 
 
 public class MyDataEntry extends DataEntry {
@@ -72,7 +70,7 @@ public class MyDataEntry extends DataEntry {
         return get("isPhysicalEntity", Boolean.class).orElse(false);
     }
 
-    public void setPhysicalEntity(Boolean val) { set("isHuman", val);}
+    public void setPhysicalEntity(Boolean val) { set("isPhysicalEntity", val);}
 
     public boolean isHuman() {
         return  get("isHuman", Boolean.class).orElse(false);

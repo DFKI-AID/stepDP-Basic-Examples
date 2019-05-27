@@ -5,29 +5,77 @@ import de.dfki.step.core.Token;
 import de.dfki.step.core.TokenComponent;
 import de.dfki.step.fusion.FusionComponent;
 import de.dfki.step.core.CoordinationComponent;
+import de.dfki.step.fusion.InputNode;
 import de.dfki.step.kb.DataEntry;
 import de.dfki.step.kb.DataStore;
-import de.dfki.step.kb.Entity;
 import de.dfki.step.output.PresentationComponent;
 import de.dfki.step.rengine.RuleComponent;
 import de.dfki.step.resolution.ResolutionComponent;
-import de.dfki.step.taskmodel.*;
+
+
+import de.dfki.step.taskmodel.RootTask;
+import de.dfki.step.taskmodel.Task;
+import de.dfki.step.tm.MyDataEntry;
+import de.dfki.step.tm.TaskLearningComponent;
 import de.dfki.step.util.Vector3;
+import de.dfki.step.web.SpeechRecognitionClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class MyTaskDialog extends Dialog {
     private static final Logger log = LoggerFactory.getLogger(MyTaskDialog.class);
+    private final String app = "learning";
 
     public MyTaskDialog() {
+
+        DataStore<Object> ds = createDataStore();
+        createGrammarComponent();
+
+       //get all objects in the environment from datastore
+       List<DataEntry> physicalObjects = ds.primaryIds()
+                .distinct()
+                .map(id -> new MyDataEntry(ds, id))
+                .filter(d -> d.isPhysicalEntity())
+                .collect(Collectors.toList());
+        //get all humans from datastore
+        Collection<DataEntry> humans = ds.primaryIds()
+                .distinct()
+                .map(id -> new MyDataEntry(ds, id))
+                .filter(d -> d.isHuman())
+                .collect(Collectors.toList());
+
+        //use ResolutionComponent
+        var resc = new ResolutionComponent();
+        resc.setPhysicalEntitySupplier(() -> physicalObjects);
+        this.addComponent(resc);
+        setPriority(resc.getId(), 250);
+
+        System.out.println(resc.getTokens().toString());
+
+    /*    InputComponent ic = retrieveComponent(InputComponent.class);
+        ic.setTimeout(Duration.ofSeconds(4));
+*/
+        //custom component where rules for basic task learning are defined
+        TaskLearningComponent trc = new TaskLearningComponent(ds);
+        this.addComponent(trc);
+
+        FusionComponent fc = retrieveComponent(FusionComponent.class);
+        //forward all input tokens that already have an intent
+        InputNode intentNode = new InputNode(t -> t.has("intent"));
+        fc.addFusionNode("intent_forward", intentNode, match -> {
+            return match.getTokens().iterator().next();
+        });
+    }
+
+    protected DataStore createDataStore() {
         DataStore<Object> ds = new DataStore();
         ds.checkMutability(true);
 
@@ -43,7 +91,7 @@ public class MyTaskDialog extends Dialog {
         robot1.save();
 
         MyDataEntry box1 = new MyDataEntry(ds, "box1");
-        box1.setColors(List.of("red"));
+        box1.setColors(List.of("green"));
         box1.setSize("small");
         box1.setPosition(new Vector3(1.0, 1.0, 1.0));
         box1.set("entity_type", "box");
@@ -66,182 +114,67 @@ public class MyTaskDialog extends Dialog {
         box3.setPhysicalEntity(true);
         box3.save();
 
-        System.out.println("KB: " + ds.getAll().toString());
-
-        RuleComponent rc = retrieveComponent(RuleComponent.class);
-        TokenComponent tc = retrieveComponent(TokenComponent.class);
-        FusionComponent fc = retrieveComponent(FusionComponent.class);
-        PresentationComponent pc = retrieveComponent(PresentationComponent.class);
-        CoordinationComponent cc = retrieveComponent(CoordinationComponent.class);
-
-        var resc = new ResolutionComponent();
-      //  Predicate<MyDataEntry> physicalObjPred = e -> e.isPhysicalEntity();
-       // Predicate<MyDataEntry> humanPred = MyDataEntry::isHuman;
-
-        List<DataEntry> physicalObjects = ds.primaryIds()
-                .map(id -> new MyDataEntry(ds, id))
-                .filter(d -> d.isPhysicalEntity())
-                .collect(Collectors.toList());
-
-        Collection<DataEntry> humans = ds.primaryIds()
-                .map(id -> new MyDataEntry(ds, id))
-                .filter(d -> d.isHuman())
-                .collect(Collectors.toList());
-
-      //  resc.setPersonSupplier(() -> humans);
-        resc.setPhysicalEntitySupplier(() -> physicalObjects);
-        this.addComponent(resc);
-   //     setPriority(resc.getId(), 250);
-
-      //  MetaFactory mf = new MetaFactory();
-
-        //this.initFusion(fc);
-        // Unimodal inputs are stored in the InputComponent.
-        // Your external sensor should add tokens via ic.addTokens(...)
-        // Tokens are removed if they are consumed, or if they are too old.
-        InputComponent ic = retrieveComponent(InputComponent.class);
-        ic.setTimeout(Duration.ofSeconds(4));
-
-
-
-        // here we simulate the focus from an external component
-    /*    var fsc = new FocusSimulationComponent();
-        this.addComponent(fsc);
-        // set the priority such that it will executed before the input component
-        setPriority(fsc.getId(), getPriority(ic.getId()) -1);
-*/
-        var trc = new TaskLearningComponent(ds, robot1);
-        this.addComponent(trc);
-
-        rc.addRule("executeTask", () -> {
-            // check for tokens with the intent 'startTask'
-            Optional<Token> token = tc.getTokens().stream()
-                    .filter(t -> t.payloadEquals("intent", "executeTask"))
-                    .findFirst();
-            if (!token.isPresent()) {
-                return;
-            }
-
-            Token executeToken = token.get();
-            if (!executeToken.get("taskname").isPresent()) {
-                cc.add("executeTask", () -> {
-                    if (robot1.getTasks().isEmpty()) {
-                        String taskname =  ((RootTask) robot1.getTasks().get(0)).getName();
-                        robot1.getTasks().get(0).execute();
-                        pc.present(PresentationComponent.simpleTTS("Okay I will execute the task: " + taskname));
-
-                    }
-                }).attachOrigin(executeToken);
-            }else {
-                cc.add("executeTask_else", () -> {
-                    Task eTask = null;
-                    for(Task t: robot1.getTasks()) {
-                        if(t instanceof RootTask) {
-                            if(((RootTask) t).getName().equals(executeToken.get("taskname").orElse(""))) {
-                               eTask = t;
-                               break;
-                            }
-                        }
-                    }
-                    if(eTask != null) {
-                        eTask.execute();
-                        pc.present(PresentationComponent.simpleTTS("Okay I will execute the task: " + executeToken.get("taskname").orElse("")));
-                    }
-                }).attachOrigin(executeToken);
-
-
-
-            }
-
-        });
-
-
-
+        return ds;
     }
 
-
-
-
-
-    /**
-     * Create fusion rule that combines gestures and focus into 'rotate_model' intents.
-     * Scenario: User sees a 3D model on a screen and wants to rotate it with a gesture.
-     *
-     * Creates a fusion rule that combines speech and focus into 'rotate_model' intents.
-     * @param fc
-     */
-   /* public void initFusion(FusionComponent fc) {
-        // looking for up and down gesture
-        Schema gestureSchema = Schema.builder()
-                .add(t -> t.payloadEqualsOneOf("gesture", "down", "up")).build();
-        InputNode gestureNode = new InputNode(gestureSchema);
-
-        // check if focus is on billboard
-        InputNode focusNode = new InputNode(t -> t.payloadEquals("focus", "billboard"));
-
-        //build a node for multimodal input: This waits
-        ParallelNode node = new ParallelNode()
-                .add(gestureNode)
-                .add(focusNode);
-
-        fc.addFusionNode("control_3d_model_g+f", node, match -> {
-            //this function is triggered if the fusion module finds a match in the input history
-            //it will create an intent and forward it to the dialog core.
-
-            // It is important that the intent includes an origin, confidence and intent itself
-            // To merge the origin from all inputs and get the average confidence from all inputs
-            // we use a helper function here.
-            Token intent = FusionComponent.defaultIntent(match, "rotate_model");
-
-            // We set additional data that is required by our rules
-            intent = intent.add("direction", match.getToken(gestureNode).get().get("gesture", String.class).get());
-
-            //add this point we have something like
-            //  token:
-            //      intent = control_3d_model
-            //      confidence = 0.4
-            //      origin = [ a, b]
-            //      direction = up
-
-
-            return intent;
-        });
-
-        // speech + focus
-        InputNode speechNode = new InputNode(t ->
-                t.payloadEquals("intent", "rotate")
-                        && t.payloadEqualsOneOf("direction", "left", "right", "down", "up")
-        );
-        ParallelNode speechAndFocus = new ParallelNode()
-                .add(speechNode)
-                .add(focusNode);
-        fc.addFusionNode("control_3d_model_s+f", speechAndFocus, match -> {
-            Token intent = FusionComponent.defaultIntent(match, "rotate_model");
-            intent = intent.add("direction", match.getToken(speechNode).get().get("direction", String.class).get());
-            return intent;
-        });
-
-        //how to say that entity-type of speech and pointing is the same,
-        // if pointing has more than one candidate -> fuse them separately,
-        // how from object detection -> 3 boxes in area to concrete object ids...
-        InputNode speechNodeTake = new InputNode(t -> t.payloadEquals("intent", "grab") && t.payloadEquals("slot_type", "entity"));
-        InputNode pointingNode = new InputNode(t -> t.has("pointing"));
-
-        ParallelNode parallelNode = new ParallelNode()
-                .add(speechNodeTake)
-                .add(pointingNode);
-        fc.addFusionNode("grab", parallelNode, match -> {
-            if(!match.getToken(speechNodeTake).get().get("entity_type").equals(match.getToken(pointingNode).get().get("pointing"))) {
-                return  null;
+    protected void createGrammarComponent() {
+        // speech-recognition-service of the step-dp
+       // GrammarManager gm = MyGrammar.create();
+     //   Grammar grammar = gm.createGrammar();
+        SpeechRecognitionClient src = new SpeechRecognitionClient(app, "172.16.68.129", 9696, (token) -> {
+            Optional<Map> semantic = token.get(Map.class, "semantic");
+            if (!semantic.isPresent()) {
+                return;
             }
+            Token processedToken = new Token((Map<String, Object>) semantic.get());
+            System.out.println("Grammar-Token: " + processedToken.toString());
 
-            Token intent = FusionComponent.defaultIntent(match, "grab");
-            intent = intent.addAll(match.getToken(speechNodeTake).get().getPayload());
-            return intent;
+            // add token to ic
+            InputComponent ic = retrieveComponent(InputComponent.class);
+            ic.addToken(processedToken);
         });
 
 
+        File file = new File(getClass().getClassLoader().getResource("tasklearning.xml").getFile());
+        Reader fileReader = null;
+        try {
+            fileReader = new FileReader(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BufferedReader bufReader = new BufferedReader(fileReader);
 
-    }*/
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        try {
+            line = bufReader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        while( line != null){
+            sb.append(line).append("\n");
+            try {
+                line = bufReader.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        String xml2String = sb.toString();
+        System.out.println("XML to String using BufferedReader : ");
+        System.out.println(xml2String);
+
+        try {
+            bufReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        String grammarStr = sb.toString();
+        src.setGrammar("main", grammarStr);
+        src.initGrammar();
+        src.init();
+    }
+
 }
 

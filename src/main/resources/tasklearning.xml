@@ -1,0 +1,252 @@
+<!DOCTYPE grammar PUBLIC "-//W3C//DTD GRAMMAR 1.0//EN" "http://www.w3.org/TR/speech-grammar/grammar.dtd">
+
+<grammar xmlns="http://www.w3.org/2001/06/grammar" xml:lang="en"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.w3.org/2001/06/grammar
+ http://www.w3.org/TR/speech-grammar/grammar.xsd"
+ version="1.0" mode="voice" root="root_rule" tag-format="semantics/1.0">
+
+ <rule id="root_rule" scope="public">
+    <one-of>
+      <item>
+        <ruleref uri="#start_task"/>
+        <tag> out=rules.start_task; </tag>
+      </item>
+      <item>
+        <ruleref uri="#end_task"/>
+        <tag> out=rules.end_task; </tag>
+      </item>
+      <item>
+        <ruleref uri="#add_atomicAction"/>
+        <tag> out=rules.add_atomicAction; </tag>
+      </item>
+      <item>
+      <ruleref uri="#specify"/>
+        <tag> out=rules.specify; </tag>
+      </item>
+       <item>
+      <ruleref uri="#execute_task"/>
+        <tag> out=rules.execute_task; </tag>
+      </item>
+    </one-of>
+</rule>
+
+ <rule id="start_task">
+ <example>Today, I will teach you the assembly task</example>
+ <example>Now, you learn the assembly task</example>
+  <tag>
+        out.intent="startTask";
+    </tag>
+   <one-of>
+        <item> 
+        <one-of>
+                <item repeat="0-1">today</item> 
+                <item repeat="0-1">now</item> 
+          </one-of> 
+        I will teach you  </item>
+        <item> 
+            <one-of>
+                <item repeat="0-1">today</item> 
+                <item repeat="0-1">now</item> 
+            </one-of> 
+            you learn 
+        </item>
+   </one-of>
+   <one-of>
+   <item> the <ruleref uri="#tasknames"/> <tag> out.taskname = rules.tasknames</tag> task </item>  
+   <item> a new task</item>
+   </one-of>
+  </rule>
+
+  <rule id="end_task">
+    <tag> out.intent = "finishTask"; </tag> 
+    <one-of>
+      <item> That's it </item>
+      <item> That's all</item>
+    </one-of>
+  </rule>
+
+  <rule id="specify">
+    <tag> out.intent = "specify"; </tag> 
+    <one-of>
+       <item> <ruleref uri="#entities"/> <tag> out.specification = rules.entities </tag></item>
+        <item> <ruleref uri="#locations"/> <tag> out.specification = rules.locations </tag></item>
+        <item> the <ruleref uri="#tasknames"/> <tag> out.specification = rules.tasknames</tag> task </item>  
+    </one-of>
+  </rule>
+
+  <rule id="execute_task">
+    <tag> out.intent = "execute_task"; </tag> 
+    <one-of>
+        <item> Execute the <ruleref uri="#tasknames"/> <tag> out.taskname = rules.tasknames</tag> task </item>  
+         <item> Run the <ruleref uri="#tasknames"/> <tag> out.taskname = rules.tasknames</tag> task </item>  
+          <item> Execute the task </item>  
+    </one-of>
+  </rule>
+
+  <rule id="add_atomicAction">
+   <example>Move to the small workbench </example>
+    <example> Pick up a green box  </example>
+    <example> Drop the red box </example>
+    <tag> out.intent = "addAtomicAction"; </tag> 
+    <one-of>
+        <item> 
+          <one-of>
+            <item>move to</item>
+            <item>drive to</item>
+            <item>go to</item>
+          </one-of>
+         <tag> out.action_name = "move" </tag> 
+         <item> <ruleref uri="#locations"/> <tag> out.slots = rules.locations </tag></item>
+        </item>
+        <item> 
+          <one-of>
+            <item>pick up</item>
+            <item>grab</item>
+            <item>take</item>
+          </one-of>
+         <tag> out.action_name = "grab" </tag> 
+         <item> <ruleref uri="#entities"/> <tag> out.slots = rules.entities </tag></item>
+        </item>
+        <item> 
+          <one-of>
+            <item>drop</item>
+            <item>put down</item>
+          </one-of>
+         <tag> out.action_name = "drop" </tag> 
+         <item> <ruleref uri="#entities"/> <tag> out.slots = rules.entities </tag></item>
+        </item>
+    </one-of>
+  </rule>
+
+  <rule id="tasknames">
+    <example> prepare packaging </example>
+    <example> transport  </example>
+    <example> assembly  </example>
+    <one-of>
+      <item> prepare packaging  <tag> out = "prepare_packaging"; </tag> </item>
+      <item> transport <tag> out = "transport"; </tag> </item>
+      <item> assembly <tag> out = "assembly"; </tag> </item>
+    </one-of>
+  </rule>
+
+  <rule id="locations">
+    <example> the small workbench </example>
+    <example> here  </example>
+    <example> the pick position </example>
+     <tag> out.slot_type = "location"; </tag>
+    <one-of>
+      <item> <ruleref uri="#entities"/> <tag> out.entities = rules.entities </tag> </item>
+      <item> here <tag> out.location = "current_location"</tag> </item>
+      <item> there <tag> out.location = "deictic_reference"</tag> </item>
+      <item> the <ruleref uri="#named_positions"/> <tag> out.location = rules.named_positions</tag> </item>
+    </one-of>
+  </rule>
+
+  <rule id="named_positions">
+    <example> pick position </example>
+    <example> working position  </example>
+    <one-of>
+      <item> pick position  <tag> out = "pick_position"; </tag> </item>
+      <item> working position <tag> out = "working_position"; </tag> </item>
+    </one-of>
+  </rule>
+
+  <rule id="entities">
+    <example> the small workbench </example>
+    <example> the large green box  </example>
+    <example> my large red box  </example>
+    <example> Magdalena </example>
+    <example> she </example>
+    <example> her </example>
+    <example> it </example>
+     <tag> out.slot_type = "entity"; </tag>
+    <one-of>
+      <item>
+        <one-of>
+         <item> <ruleref uri="#personal_pronouns"/> <tag> out.personal_pronoun = rules.personal_pronouns </tag> </item>
+         <item>  the </item>
+         </one-of>
+        <item repeat="0-1"> <ruleref uri="#attributes"/> <tag> out.attributes = rules.color</tag> </item>
+        <item>  <ruleref uri="#objecttypes"/> <tag> out.entity_type = rules.objecttypes</tag> </item>
+      </item>
+      <item> <ruleref uri="#persons"/> <tag> out.entity_type =  "person" </tag> <tag> out.person_name = rules.persons</tag>  </item>
+      <item> <ruleref uri="#personal_pronouns"/> <tag> out.entity_type =  "personal_pronoun" </tag> <tag> out.personal_pronoun = rules.personal_pronouns </tag> </item>
+    </one-of>
+  </rule>
+
+  <rule id="personal_pronouns">
+    <example>he </example>
+    <example> she  </example>
+    <example> it  </example>
+    <example> her  </example>
+    <one-of>
+    <!--->  <item> I <tag> out.singular = "singular"; </tag> <tag> out.person = "first"; </tag> </item>
+      <item> you <tag> out.person = "second"; </tag> </item>
+      <item> he <tag> out.singular = "singular"; </tag> <tag> out.person = "third"; </tag>  <tag> out.gender = "male"; </tag></item>
+      <item> she <tag> out.singular = "singular"; </tag> <tag> out.person = "third"; </tag>  <tag> out.gender = "female"; </tag></item>
+      <item> it <tag> out.singular = "singular"; </tag> <tag> out.person = "third"; </tag>  <tag> out.gender = "neutrum"; </tag></item>
+      <item> we <tag> out.singular = "plural"; </tag> <tag> out.person = "first"; </tag> </item>
+     <item> they <tag> out.singular = "plural"; </tag> <tag> out.person = "third"; </tag> </item> </-->
+     <item> I <tag> out= "i"; </tag> </item>
+      <item> you <tag> out = "you"; </tag> </item>
+      <item> he <tag> out= "he" </tag></item>
+      <item> she <tag> out = "she"; </tag></item>
+      <item> it <tag> out = "it"; </tag></item>
+      <item> we <tag> out= "we"; </tag> </item>
+     <item> they <tag> out = "they"; </tag> </item>
+    </one-of>
+  </rule>
+
+  <rule id="objecttypes">
+    <example>workbench </example>
+    <example> box  </example>
+    <one-of>
+      <item> workbench <tag> out = "workbench"; </tag> </item>
+      <item> box <tag> out = "box"; </tag> </item>
+    </one-of>
+  </rule>
+
+  <rule id="attributes">
+    <example> small </example>
+    <example> green  </example>
+    <item repeat="0-1"> <ruleref uri="#size"/> <tag> out.attribute1 = rules.size</tag> </item>
+    <item repeat="0-1"> <ruleref uri="#color"/> <tag> out.attribute2 = rules.color</tag></item> 
+  </rule>
+
+  <rule id="size">
+    <example> small </example>
+    <example> large  </example>
+    <example> medium  </example>
+     <tag> out.attribute_type = "size"; </tag>
+    <one-of>
+      <item> small <tag> out.attribute_value  = "small"; </tag> </item>
+      <item> medium <tag> out.attribute_value  = "medium"; </tag> </item>
+      <item> large <tag> out.attribute_value  = "large"; </tag> </item>
+    </one-of>
+  </rule>
+
+  <rule id="color">
+    <example> red </example>
+    <example> green  </example>
+    <example> yellow  </example>
+    <example> blue  </example>
+    <tag> out.attribute_type = "colors"; </tag>
+    <one-of>
+      <item> red <tag> out.attribute_value = "red"; </tag> </item>
+      <item> green <tag> out.attribute_value = "green"; </tag> </item>
+      <item> yellow <tag> out.attribute_value = "yellow"; </tag> </item>
+      <item> blue <tag> out.attribute_value = "blue"; </tag> </item>
+    </one-of>
+  </rule>
+
+
+  <rule id="persons">
+    <example> Magdalena </example>
+  
+    <one-of>
+      <item> Magdalena  <tag> out = "Magdalena"; </tag> </item>
+    </one-of>
+  </rule>
+
+ </grammar>

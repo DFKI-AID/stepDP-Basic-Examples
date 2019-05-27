@@ -1,6 +1,7 @@
-package de.dfki.step.taskmodel;
+package de.dfki.step.tm;
 
 
+import de.dfki.step.taskmodel.AtomicTask;
 
 public class GrabDropTask extends AtomicTask {
 

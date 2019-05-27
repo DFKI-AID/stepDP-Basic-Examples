@@ -1,4 +1,4 @@
-package de.dfki.step.taskmodel;
+package de.dfki.step.tm;
 
 import de.dfki.step.core.*;
 import de.dfki.step.dialog.MetaFactory;
@@ -6,6 +6,8 @@ import de.dfki.step.kb.DataStore;
 import de.dfki.step.output.PresentationComponent;
 import de.dfki.step.core.CoordinationComponent;
 import de.dfki.step.rengine.RuleComponent;
+import de.dfki.step.taskmodel.RootTask;
+import de.dfki.step.taskmodel.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +17,7 @@ import java.util.*;
 public class TaskLearningComponent implements Component {
 
     private String currentTaskId;
-    private RootTask currentRootTask;
+    private RootTask currentRootTask = null;
     private Task currentTask;
     private RuleComponent rsc;
     private TokenComponent tc;
@@ -23,19 +25,16 @@ public class TaskLearningComponent implements Component {
     private CoordinationComponent rc;
     private MetaFactory mf;
     private Map<String, Object> map = new HashMap<>();
-    private DataStore ds;
     private MyDataEntry robot;
 
     private static final Logger log = LoggerFactory.getLogger(TaskLearningComponent.class);
 
-    public TaskLearningComponent(DataStore ds, MyDataEntry robot) {
-        this.ds = ds;
-        this.robot = robot;
+    public TaskLearningComponent(DataStore ds) {
+        this.robot =  new MyDataEntry(ds, "r1");//(MyDataEntry) ds.get("r1").get();
     }
 
 
     public void createStartTaskRule() {
-
         rsc.addRule("startTask", () -> {
             // check for tokens with the intent 'startTask'
             Optional<Token> token = tc.getTokens().stream()
@@ -46,6 +45,7 @@ public class TaskLearningComponent implements Component {
             }
 
             Token startTaskToken = token.get();
+
             if (!startTaskToken.get("taskname").isPresent()) {
                 rc.add("startTask", () -> {
                     pc.present(PresentationComponent.simpleTTS("What is the name of the new task?"));
@@ -84,11 +84,18 @@ public class TaskLearningComponent implements Component {
             }
 
             Token intent = token.get();
+            if(currentRootTask == null) {
+                pc.present(PresentationComponent.simpleTTS("I am currently not learning a task."));
+                return;
+            }
             if (!intent.get("taskname").isPresent()) { //assume currentTask -> maybe ask question??
                 List<Task> tasks = robot.getTasks();
-                tasks.add(currentRootTask);
-                robot.setTasks(tasks);
+                ArrayList<Task> newList = new ArrayList<>();
+                newList.addAll(tasks);
+                newList.add(currentRootTask);
+                robot.setTasks(newList);
                 robot.save();
+                pc.present(PresentationComponent.simpleTTS("Okay, I successfully learnt a new task."));
 
             }else {
                 if(intent.get("taskname").get().equals(currentRootTask.getName())) {
@@ -103,8 +110,10 @@ public class TaskLearningComponent implements Component {
                     pc.present(PresentationComponent.simpleTTS("Currently I am learning the " + currentRootTask.getName() + " task. Is learning for this task completed?"));
                     mf.createInformAnswer("confirmfinishedTask", () -> {
                         List<Task> tasks = robot.getTasks();
-                        tasks.add(currentRootTask);
-                        robot.setTasks(tasks);
+                        ArrayList<Task> newList = new ArrayList<>();
+                        newList.addAll(tasks);
+                        newList.add(currentRootTask);
+                        robot.setTasks(newList);
                         robot.save();
                         pc.present(PresentationComponent.simpleTTS("Okay, I successfully learnt a new task."));
                     }, () -> {
@@ -130,7 +139,12 @@ public class TaskLearningComponent implements Component {
 
             Token moveToken = token.get();
 
-            if(!moveToken.get("location").isPresent()) {
+            if(currentRootTask == null) {
+                pc.present(PresentationComponent.simpleTTS("I am currently not learning a task."));
+                return;
+            }
+
+            if(!moveToken.get("slots").isPresent()) {
                 rc.add("addMove", () -> {
                     pc.present(PresentationComponent.simpleTTS("Where do you want me to go?"));
                     //specify rule does not need to be activated?
@@ -144,25 +158,32 @@ public class TaskLearningComponent implements Component {
 
             }else {
                 rc.add(() -> {
-                    String locId = (String) moveToken.get("location").get();
-                    currentRootTask.addTask(new MoveTask("move", locId));
-                    log.info("move_to: {}", moveToken.get("location", String.class).get());
+                Map<String, Object> slotinfo = (Map) moveToken.get("slots").get();
+                if(slotinfo.containsKey("resolved") && slotinfo.get("resolved").equals(true) && !((List<Map<String, Object>>) slotinfo.get("resolved_candidates")).isEmpty()) {
+                    String entity = null;
+                    double conf = 0.0;
+                    for(Map<String, Object> slotCandidate: (List<Map<String, Object>>) slotinfo.get("resolved_candidates")) {
+                        if((Double) slotCandidate.get("res_conf") > conf) {
+                            entity = (String) slotCandidate.get("res_id");
+                        }
+                    }
+                    if(entity != null) {
+                        currentRootTask.addTask(new MoveTask("move", entity));
+                        log.info("move_to: {}", entity);
+                    }
+                }
+
                 }).attachOrigin(moveToken);
 
             }
 
-
-            // consume the token (subsequent rules won't see the token)
-         //   sys.removeToken(token.get());
         });
 
-        // set the priority of the rule.
-      //  rs.setPriority("addMove", 20);
-     //   tagSystem.addTag("addMove", "TaskLearning");
 
     }
 
     public void createGrabDropRule() {
+        System.out.println("tokens in grabdroprule: " + tc.getTokens().toString());
 
         rsc.addRule("addGrabDrop", () -> {
             // check for tokens with the intent 'greetings'
@@ -175,10 +196,15 @@ public class TaskLearningComponent implements Component {
             }
 
             Token intent = token.get();
-            final boolean isDrop = intent.get("type").equals("drop");
+            boolean isDrop =  intent.get("action_name").get().equals("drop");
 
+            if(currentRootTask == null) {
+                pc.present(PresentationComponent.simpleTTS("I am currently not learning a task."));
+                return;
+            }
 
-            if(!intent.get("object").isPresent()) {
+            if(!intent.get("slots").isPresent()) {
+
                 if(isDrop) {
                     pc.present(PresentationComponent.simpleTTS("What should I drop?"));
                 }else {
@@ -197,17 +223,74 @@ public class TaskLearningComponent implements Component {
                 });
 
             }else {
-                if(isDrop) {
-                    currentRootTask.addTask(new GrabDropTask("drop", (String) intent.get("object").get()));
-                    log.info("drop: {}", intent.get("object", String.class).get());
-                }else {
-                    currentRootTask.addTask(new GrabDropTask("grab", (String) intent.get("object").get()));
-                    log.info("grab: {}", intent.get("object", String.class).get());
+                Map<String, Object> slotinfo = (Map) intent.get("slots").get();
+                if(slotinfo.containsKey("resolved") && slotinfo.get("resolved").equals(true) && !((List<Map<String, Object>>) slotinfo.get("resolved_candidates")).isEmpty()) {
+                    String entity = null;
+                    double conf = 0.0;
+                    for(Map<String, Object> slotCandidate: (List<Map<String, Object>>) slotinfo.get("resolved_candidates")) {
+                        if((Double) slotCandidate.get("res_conf") > conf) {
+                            entity = (String) slotCandidate.get("res_id");
+                        }
+                    }
+
+                    if(entity != null) {
+                        if (isDrop) {
+                            currentRootTask.addTask(new GrabDropTask("drop", entity));
+                            log.info("drop: {}", entity);
+                        } else {
+                            currentRootTask.addTask(new GrabDropTask("grab", entity));
+                            log.info("grab: {}", entity);
+                        }
+                    }
                 }
             }
 
         });
 
+    }
+
+    public void createExecutionRule() {
+        rsc.addRule("executeTask", () -> {
+            // check for tokens with the intent 'startTask'
+            Optional<Token> token = tc.getTokens().stream()
+                    .filter(t -> t.payloadEquals("intent", "execute_task"))
+                    .findFirst();
+            if (!token.isPresent()) {
+                return;
+            }
+
+            Token executeToken = token.get();
+            if (!executeToken.get("taskname").isPresent()) {
+                rc.add("executeTask", () -> {
+                    if (!robot.getTasks().isEmpty()) {
+                        String taskname =  ((RootTask) robot.getTasks().get(0)).getName();
+                        robot.getTasks().get(0).execute();
+                        pc.present(PresentationComponent.simpleTTS("Okay I will execute the task: " + taskname));
+
+                    }
+                }).attachOrigin(executeToken);
+            }else {
+                rc.add("executeTask_else", () -> {
+                    Task eTask = null;
+                    for(Task t: robot.getTasks()) {
+                        if(t instanceof RootTask) {
+                            if(((RootTask) t).getName().equals(executeToken.get("taskname").orElse(""))) {
+                                eTask = t;
+                                break;
+                            }
+                        }
+                    }
+                    if(eTask != null) {
+                        eTask.execute();
+                        pc.present(PresentationComponent.simpleTTS("Okay I will execute the task: " + executeToken.get("taskname").orElse("")));
+                    }
+                }).attachOrigin(executeToken);
+
+
+
+            }
+
+        });
 
     }
 
@@ -224,6 +307,7 @@ public class TaskLearningComponent implements Component {
         createFinishTaskRule();
         createMoveRule();
         createGrabDropRule();
+        createExecutionRule();
     }
 
     @Override
