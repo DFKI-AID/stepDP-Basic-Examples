@@ -1,104 +1,101 @@
 package de.dfki.step.dialog;
 
+import de.dfki.step.core.Component;
 import de.dfki.step.core.ComponentManager;
-import de.dfki.step.core.CoordinationComponent;
-import de.dfki.step.core.TagSystem;
+import de.dfki.step.core.Token;
 import de.dfki.step.core.TokenComponent;
-import de.dfki.step.output.PresentationComponent;
 import de.dfki.step.rengine.RuleComponent;
-import de.dfki.step.sc.SimpleStateBehavior;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
- * Example for simple statechart-based dialog
+ *  Loads confidence values for intent filtering from a separate component
  */
 public class MyDialog20 extends Dialog {
     private static final Logger log = LoggerFactory.getLogger(MyDialog20.class);
 
     public MyDialog20() {
+        RuleComponent rsc = retrieveComponent(RuleComponent.class);
+        TokenComponent tc = retrieveComponent(TokenComponent.class);
+        ConfidenceAdapationComponent cac = new ConfidenceAdapationComponent();
+        this.addComponent(cac);
 
-        try {
-            GreetingBehavior greetingBehavior = new GreetingBehavior();
-            addComponent(greetingBehavior);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+        rsc.addRule("swipe_gesture", () -> {
+            List<Token> gestureIntents = tc.getTokens().stream()
+                    .filter(t -> t.payloadEquals("intent", "swipe_gesture"))
+//                    .filter(t -> t.get("confidence", Double.class).orElse(0.0) > cac.getConfidence("swipe_gesture"))
+                    .collect(Collectors.toList());
 
+            for(Token gestureIntent : gestureIntents) {
+                Double confidence = gestureIntent.get("confidence", Double.class).orElse(0.0);
+                Double minConfidence = cac.getConfidence("swipe_gesture");
+                if(confidence < minConfidence) {
+                    log.info("Ignored {} because confidence was lower than {}", gestureIntent, minConfidence);
+                    continue;
+                }
 
+                //handle swipe gesture
+                System.out.println("swipe_gesture");
+            }
+        });
     }
 
-    public static class GreetingBehavior extends SimpleStateBehavior {
 
-        private RuleComponent rc;
-        private TokenComponent tc;
-        private CoordinationComponent cc;
-        private PresentationComponent pc;
 
-        public GreetingBehavior() throws URISyntaxException {
-            super("/sc/greetings");
-        }
+
+    public static class ConfidenceAdapationComponent implements Component {
+        private static Logger log = LoggerFactory.getLogger(ConfidenceAdapationComponent.class);
+        // maps from arbitrary keys to confidences
+        // keys could be 'intent name'
+        private Map<String, Double> map = new HashMap<>();
+        private Double defaultMinConfidence = 0.5;
+        //If you use persistent data structure, you can avoid creating copies in the snapshot methods
+//        private PMap<String, Double> map = HashTreePMap.empty();
 
         @Override
         public void init(ComponentManager cm) {
-            super.init(cm);
-            rc = cm.retrieveComponent(RuleComponent.class);
-            tc = cm.retrieveComponent(TokenComponent.class);
-            cc = cm.retrieveComponent(CoordinationComponent.class);
-            pc = cm.retrieveComponent(PresentationComponent.class);
-
-            handleGreetings();
         }
-
-
-
 
         @Override
-        public Set<String> getActiveRules(String state) {
-            if(Objects.equals(state, "Start")) {
-                return Set.of("say_hello");
-            }
-            if(Objects.equals(state, "End")) {
-                return Set.of("say_goodbye");
-            }
-            return Collections.EMPTY_SET;
+        public void deinit() {
         }
 
-
-
-        public void handleGreetings() {
-
-            rc.addRule("say_hello", () -> {
-                tc.getTokens().stream()
-                    .filter(t -> t.payloadEquals("intent", "greet"))
-                    .forEach(t -> {
-                        cc.add(() -> {
-                            pc.present(PresentationComponent.simpleTTS("Hello! Nice to meet you."));
-                            stateHandler.fire("hello");
-                        }).attachOrigin(t);
-                    });
-            });
-
-            rc.addRule("say_goodbye", () -> {
-                tc.getTokens().stream()
-                    .filter(t -> t.payloadEquals("intent", "bye"))
-                    .forEach(t -> {
-                        cc.add(() -> {
-                            pc.present(PresentationComponent.simpleTTS("Goodbye! It was a pleasure to meet you."));
-                            stateHandler.fire("goodbye");
-
-                        }).attachOrigin(t);
-                    });
-            });
-
+        @Override
+        public void update() {
         }
+
+        @Override
+        public synchronized Object createSnapshot() {
+            Map<String, Double> mapCopy = new HashMap<>();
+            mapCopy.putAll(this.map);
+            return mapCopy;
+        }
+
+        @Override
+        public synchronized void loadSnapshot(Object snapshot) {
+            this.map = new HashMap<>();
+            this.map.putAll((Map) snapshot);
+        }
+
+        public synchronized void setConfidence(String key, Double minConfidence) {
+            log.info("updating confidence for {}={}", key, minConfidence);
+            this.map.put(key, minConfidence);
+        }
+
+        public synchronized Double getConfidence(String key) {
+            Double confidence = map.get(key);
+            if(confidence == null) {
+                return defaultMinConfidence;
+            }
+            return confidence;
+        }
+
     }
 }
 

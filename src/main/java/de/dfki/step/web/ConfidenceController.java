@@ -1,7 +1,7 @@
 package de.dfki.step.web;
 
 import de.dfki.step.dialog.Dialog;
-import de.dfki.step.dialog.MyDialog30;
+import de.dfki.step.dialog.MyDialog20;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +36,7 @@ public class ConfidenceController {
     public ResponseEntity setConfidence(@PathVariable("id") String id, @RequestBody Map<String, Object> body) {
         try {
             Double confidence = (Double) body.get("confidence");
-            dialog.retrieveComponent(MyDialog30.ConfidenceAdapationComponent.class).setConfidence(id, confidence);
+            dialog.retrieveComponent(MyDialog20.ConfidenceAdapationComponent.class).setConfidence(id, confidence);
             return ResponseEntity.status(HttpStatus.OK).body("ok");
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());

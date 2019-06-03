@@ -1,106 +1,104 @@
 package de.dfki.step.dialog;
 
-import de.dfki.step.core.Component;
 import de.dfki.step.core.ComponentManager;
-import de.dfki.step.core.Token;
+import de.dfki.step.core.CoordinationComponent;
 import de.dfki.step.core.TokenComponent;
+import de.dfki.step.output.PresentationComponent;
 import de.dfki.step.rengine.RuleComponent;
+import de.dfki.step.sc.SimpleStateBehavior;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
 
 
 /**
+ * Example for simple statechart-based dialog
  */
 public class MyDialog30 extends Dialog {
     private static final Logger log = LoggerFactory.getLogger(MyDialog30.class);
 
     public MyDialog30() {
-        RuleComponent rsc = retrieveComponent(RuleComponent.class);
-        TokenComponent tc = retrieveComponent(TokenComponent.class);
-        ConfidenceAdapationComponent cac = new ConfidenceAdapationComponent();
-        this.addComponent(cac);
 
-        rsc.addRule("swipe_gesture", () -> {
-            List<Token> gestureIntents = tc.getTokens().stream()
-                    .filter(t -> t.payloadEquals("intent", "swipe_gesture"))
-//                    .filter(t -> t.get("confidence", Double.class).orElse(0.0) > cac.getConfidence("swipe_gesture"))
-                    .collect(Collectors.toList());
+        try {
+            GreetingBehavior greetingBehavior = new GreetingBehavior();
+            addComponent(greetingBehavior);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
 
-            for(Token gestureIntent : gestureIntents) {
-                Double confidence = gestureIntent.get("confidence", Double.class).orElse(0.0);
-                Double minConfidence = cac.getConfidence("swipe_gesture");
-                if(confidence < minConfidence) {
-                    log.info("Ignored {} because confidence was lower than {}", gestureIntent, minConfidence);
-                    continue;
-                }
 
-                //handle swipe gesture
-                System.out.println("swipe_gesture");
-            }
-        });
     }
 
+    public static class GreetingBehavior extends SimpleStateBehavior {
 
+        private RuleComponent rc;
+        private TokenComponent tc;
+        private CoordinationComponent cc;
+        private PresentationComponent pc;
 
-
-    public static class ConfidenceAdapationComponent implements Component {
-        private static Logger log = LoggerFactory.getLogger(ConfidenceAdapationComponent.class);
-        // maps from arbitrary keys to confidences
-        // keys could be 'intent name'
-        private Map<String, Double> map = new HashMap<>();
-        private Double defaultMinConfidence = 0.5;
-        //If you use persistent data structure, you can avoid creating copies in the snapshot methods
-//        private PMap<String, Double> map = HashTreePMap.empty();
+        public GreetingBehavior() throws URISyntaxException {
+            super("/sc/greetings");
+        }
 
         @Override
         public void init(ComponentManager cm) {
+            super.init(cm);
+            rc = cm.retrieveComponent(RuleComponent.class);
+            tc = cm.retrieveComponent(TokenComponent.class);
+            cc = cm.retrieveComponent(CoordinationComponent.class);
+            pc = cm.retrieveComponent(PresentationComponent.class);
+
+            handleGreetings();
         }
+
+
+
 
         @Override
-        public void deinit() {
-        }
-
-        @Override
-        public void update() {
-        }
-
-        @Override
-        public synchronized Object createSnapshot() {
-            Map<String, Double> mapCopy = new HashMap<>();
-            mapCopy.putAll(this.map);
-            return mapCopy;
-        }
-
-        @Override
-        public synchronized void loadSnapshot(Object snapshot) {
-            this.map = new HashMap<>();
-            this.map.putAll((Map) snapshot);
-        }
-
-        public synchronized void setConfidence(String key, Double minConfidence) {
-            log.info("updating confidence for {}={}", key, minConfidence);
-            this.map.put(key, minConfidence);
-        }
-
-        public synchronized Double getConfidence(String key) {
-            Double confidence = map.get(key);
-            if(confidence == null) {
-                return defaultMinConfidence;
+        public Set<String> getActiveRules(String state) {
+            //makes sure that rules are only activated in the given state
+            if(Objects.equals(state, "Start")) {
+                return Set.of("say_hello");
             }
-            return confidence;
+            if(Objects.equals(state, "End")) {
+                return Set.of("say_goodbye");
+            }
+            return Collections.EMPTY_SET;
         }
 
+
+
+        public void handleGreetings() {
+
+            rc.addRule("say_hello", () -> {
+                tc.getTokens().stream()
+                    .filter(t -> t.payloadEquals("intent", "greet"))
+                    .forEach(t -> {
+                        cc.add(() -> {
+                            pc.present(PresentationComponent.simpleTTS("Hello! Nice to meet you."));
+                            //triggers the transition to go into the other state
+                            stateHandler.fire("hello");
+                        }).attachOrigin(t);
+                    });
+            });
+
+            rc.addRule("say_goodbye", () -> {
+                tc.getTokens().stream()
+                    .filter(t -> t.payloadEquals("intent", "bye"))
+                    .forEach(t -> {
+                        cc.add(() -> {
+                            pc.present(PresentationComponent.simpleTTS("Goodbye! It was a pleasure to meet you."));
+                            stateHandler.fire("goodbye");
+
+                        }).attachOrigin(t);
+                    });
+            });
+
+        }
     }
 }
 
