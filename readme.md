@@ -1,4 +1,3 @@
-
 ## Example Project
 General Project Structure
 other files. config file. how to start.
@@ -42,15 +41,17 @@ and press sendIntent.
 - Task 2: Allow greetings at most x times per second to occur. For a solution, check the function createGreetingsRule in the [MetaFactory](src/main/java/de/dfki/step/dialog/MetaFactory.java).
 - Task 3: Decrease the necessary confidence if it was too low to trigger a rule. See [MyDialog11.java](src/main/java/de/dfki/step/dialo/MyDialog11.java) for a solution.
 
-### Rule Coordination
-input has the same origin, play around with priority. see dialog
+### Speech Recognition / TTS
+This example shows how to add Speech Recognition and TTS to the dialog. 
+See [MyDialog12.java](src/main/java/de/dfki/step/dialog/MyDialog12.java). 
+The [Speech Recognition Service](https://lns-90165.sb.dfki.de/gitlab/i40/tractat/step-dp/speech-recognition-service) which uses the Microsoft Speech API for grammar based speech recognition is used. 
 
 
 ### New Components / Extend the Web API
 Loading confidence values for intent filtering from a separate component.
 The confidence can be changed through a HTTP POST request.
 See:
-- [MyDialog30](src/main/java/de/dfki/step/dialog/MyDialog30.java)
+- [MyDialog20](src/main/java/de/dfki/step/dialog/MyDialog20.java)
 - [ConfidenceController](src/main/java/de/dfki/step/web/ConfidenceController.java).
 
 Example requests for setting the minimal confidence to 0.7.
@@ -73,9 +74,12 @@ If you want to add html / js / ..., files, just put them into resurces/static.
 
 
 ### State Charts: Use SCXML for higher dialog modelling
-- See
+- A very basic greeting state chart with two states and two transitions:
+    - [MyDialog30](src/main/java/de/dfki/step/dialog/MyDialog30.java) 
+    - [greetings.scxml](src/main/resources/sc/greetings.scxml) (Created with qt creator. New File> Modeling > State Chart)
+- A slightly advanced example:
 	- [MyDialog40](src/main/java/de/dfki/step/dialog/MyDialog40.java)
-	- [MyDialog40.scxml](src/main/resources/sc/MyDialog40.scxml) (Created with qt creator. New File> Modeling > State Chart)
+	- [MyDialog40.scxml](src/main/resources/sc/MyDialog40.scxml) 
 
 
 
@@ -118,7 +122,7 @@ This examples extend the fusion example.
 
 
 ## Build and Run
-Execute build.sh. Have a look at the script to change the example.
+Execute build-dialog.sh. Specify which dialog to run in run-dialog.sh or run it directly from your IDE.
 
 ## Git Subtree info
 This repo uses git subtrees for dependency management.
