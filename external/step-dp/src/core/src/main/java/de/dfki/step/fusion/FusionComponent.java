@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Uses {@link FusionNode} to match input pattern for creating intents.
@@ -51,12 +52,19 @@ public class FusionComponent implements Component {
         if(resc != null) {
             tokens = resc.getTokens();
 
-
         }else {
             tokens = ic.getTokens();
         }
+
+
+        //check if an intent was already provided in the input token -> if so: can already be forwarded to the dialog
+        Collection<Token> intentTokens = tokens.stream().filter(t -> t.has("intent")).collect(Collectors.toList());
+        cm.retrieveComponent(TokenComponent.class).addTokens(intentTokens);
+
+        //do fusion
         var fusedTokens = fuse(tokens);
         cm.retrieveComponent(TokenComponent.class).addTokens(fusedTokens);
+
     }
 
     /**
