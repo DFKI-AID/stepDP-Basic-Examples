@@ -1,6 +1,7 @@
 package de.dfki.step.fusion;
 
 import de.dfki.step.core.*;
+import de.dfki.step.resolution.ResolutionComponent;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
 import org.pcollections.PSet;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Uses {@link FusionNode} to match input pattern for creating intents.
@@ -21,11 +23,15 @@ public class FusionComponent implements Component {
     private PMap<String, BooleanSupplier> activeSuppliers = HashTreePMap.empty();
     private ComponentManager cm;
     private InputComponent ic;
+    private ResolutionComponent resc = null;
 
     @Override
     public void init(ComponentManager cm) {
         this.cm = cm;
         this.ic = cm.retrieveComponent(InputComponent.class);
+        if(cm.getComponent(ResolutionComponent.class).isPresent()) {
+            this.resc = cm.getComponent(ResolutionComponent.class).get();
+        }
     }
 
     @Override
@@ -41,10 +47,23 @@ public class FusionComponent implements Component {
                     .forEach(id -> removeFusionNode(id));
         }
 
+        //check if resolution component is present -> get tokens from it otherwise directly use token from the input component
+        PSet<Token> tokens;
+        if(resc != null) {
+            tokens = resc.getTokens();
+        }else {
+            tokens = ic.getTokens();
+        }
 
-        PSet<Token> tokens = ic.getTokens();
+
+        //check if an intent was already provided in the input token -> if so: can already be forwarded to the dialog
+        Collection<Token> intentTokens = tokens.stream().filter(t -> t.has("intent")).collect(Collectors.toList());
+        cm.retrieveComponent(TokenComponent.class).addTokens(intentTokens);
+
+        //do fusion
         var fusedTokens = fuse(tokens);
         cm.retrieveComponent(TokenComponent.class).addTokens(fusedTokens);
+
     }
 
     /**
