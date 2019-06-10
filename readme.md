@@ -85,7 +85,7 @@ If you want to add html / js / ..., files, just put them into resurces/static.
 
 
 ### Fusion: Create Intents from inputs.
-See [MyDialog50](src/main/java/de/dfki/step/dialo/MyDialog50.java). Combine focus + speech and focus + gesture to rotate 3D model.
+See [MyDialog50](src/main/java/de/dfki/step/dialog/MyDialog50.java). Combine focus + speech and focus + gesture to rotate 3D model.
 
 Send as inputs from the web gui to see the output in the terminal.
 ```json
@@ -103,7 +103,14 @@ or
 }
 ```
 
+### Resolution and KB
+- Use the Resolution Component to resolve references to objects stored in the Datastore
+- See [MyDialog60](src/main/java/de/dfki/step/dialog/MyDialog60.java) and [MyDialog60Component](src/main/java/de/dfki/step/dialog/MyDialog60Component.java)
 
+### Basic Task Model
+- Create a new robot task by adding atomic actions to it
+- See [MyTaskDialog](src/main/java/de/dfki/step/dialog/MyTaskDialog.java) and [TaskLearningComponent](src/main/java/de/dfki/step/tm/TaskLearningComponent.java)
+(advanced version of [MyDialog60](src/main/java/de/dfki/step/dialog/MyDialog60.java))
 
 ### Dialog Coordination and Output
 This examples extend the fusion example. 
