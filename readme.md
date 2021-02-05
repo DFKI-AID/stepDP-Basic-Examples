@@ -1,10 +1,6 @@
----
-
-**Important**
+## Important Note
 
 These examples work with old stepDP versions. The examples for the new stepDP version can be found on the master branch of the GitHub repository [stepDP-Basic-Examples](https://github.com/DFKI-AID/stepDP-Basic-Examples).
-
----
 
 ## Example Project
 General Project Structure
