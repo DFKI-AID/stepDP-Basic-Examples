@@ -4,3 +4,5 @@ target
 *.iml
 *.versionsBackup
 coverage-error.log
+.project
+.settings
