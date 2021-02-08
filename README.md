@@ -33,7 +33,7 @@ Here's an overview of which example JSON inputs to select for which example:
 - **PatternConditionExample**:
     - *"add bring intent with pizza"* or
     - *"add bring intent with water"*
-- **DeclarativeTypeBasedExample**:
+- **DeclarativeTypeBasedFusionExample**:
     - *"add bring intent"* and additionally
     - *"add pizza"*
   
