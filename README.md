@@ -22,3 +22,19 @@ dialog:
 ```
 
 To run the selected example, simply run the *Main* class in your IDE.
+
+While running an example, you can send input in JSON format to StepDP via its Debug Web UI, which runs on port 50000. The corresponding tab is called "Blackboard Input". For each code example, example JSON inputs should be available in the drop-down list:
+
+[Screenshot of Debug Web UI](docs/DebugUI.png)
+
+Here's an overview of which example JSON inputs to select for which example:
+- **HelloWorldExample**:
+    - *"add greeting"*
+- **PatternConditionExample**:
+    - *"add bring intent with pizza"* or
+    - *"add bring intent with water"*
+- **DeclarativeTypeBasedExample**:
+    - *"add bring intent"* and additionally
+    - *"add pizza"*
+  
+Of course, you can also create your own JSON inputs or vary the ones that are provided to experiment a little. Just make sure that they comply with the semantic tree defined in the corresponding code example (or extend the semantic tree yourself).

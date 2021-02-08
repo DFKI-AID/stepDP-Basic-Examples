@@ -13,10 +13,12 @@ import de.dfki.step.kb.semantic.Type;
 public class HelloWorldExample extends Dialog {
 
     public HelloWorldExample() throws Exception {
+    	// define type "GreetingIntent" in the semantic tree
 		Type greetingIntent = new Type("GreetingIntent", this.getKB());
 		greetingIntent.addProperty(new PropString("userName", this.getKB()));
 		this.getKB().addType(greetingIntent);
 		
+		// define a rule that reacts to a greeting intent by greeting the user
         Rule greetingRule = new SimpleRule(tokens -> {
         	Token t = tokens[0];
         	if (!t.isSet("userName")) {
@@ -26,6 +28,8 @@ public class HelloWorldExample extends Dialog {
                 System.out.println("Hello, nice to meet you, " + userName + "!");
         	}
         }, "GreetingRule");
+        // here, we set the condition for the rule: it should be triggered by tokens
+        // of type "GreetingIntent"
         Pattern p = new PatternBuilder("GreetingIntent", this.getKB()).build();
         greetingRule.setCondition(new PatternCondition(p));
         this.getBlackboard().addRule(greetingRule);
