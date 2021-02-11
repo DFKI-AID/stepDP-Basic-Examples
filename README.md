@@ -1,6 +1,6 @@
 # Basic Examples for StepDP Versions >= 0.9.0
 
-This projects contains some code examples that show how to build a dialog system with StepDP. For each example, there is a more detailed description in the [StepDP documentation](http://stepdp.sb.dfki.de). The respective links are provided below. The following examples are currently available:
+This project contains some code examples that show how to build a dialog system with StepDP. For each example, there is a more detailed description in the [StepDP documentation](http://stepdp.sb.dfki.de). The respective links are provided below. The following examples are currently available:
 
 - **HelloWorldExample**: Most basic example, which shows how to define simple dialog rules (<http://stepdp.sb.dfki.de/stepdp/rules/simple_rule/>).
 - **PatternConditionExample**: Shows how to define slightly more advanced conditions for dialog rules (<http://stepdp.sb.dfki.de/stepdp/rules/pattern_condition/>).
