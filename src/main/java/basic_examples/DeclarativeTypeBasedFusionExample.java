@@ -3,7 +3,7 @@ package basic_examples;
 import java.time.Duration;
 
 import de.dfki.step.blackboard.Rule;
-import de.dfki.step.blackboard.Token;
+import de.dfki.step.blackboard.BasicToken;
 import de.dfki.step.blackboard.conditions.PatternCondition;
 import de.dfki.step.blackboard.patterns.Pattern;
 import de.dfki.step.blackboard.patterns.PatternBuilder;
@@ -37,7 +37,7 @@ public class DeclarativeTypeBasedFusionExample extends Dialog {
 		Pattern p = new PatternBuilder("BringObject", this.getKB()).build();
 	
 		rule = new SimpleRule(tokens -> {
-			Token t = tokens[0];
+			BasicToken t = tokens[0];
 			IKBObject object = t.getResolvedReference("object");
 			if (object == null) {
 				System.out.println("Which object should I bring to you?");

@@ -1,7 +1,7 @@
 package basic_examples;
 
 import de.dfki.step.blackboard.Rule;
-import de.dfki.step.blackboard.Token;
+import de.dfki.step.blackboard.BasicToken;
 import de.dfki.step.blackboard.conditions.PatternCondition;
 import de.dfki.step.blackboard.patterns.Pattern;
 import de.dfki.step.blackboard.patterns.PatternBuilder;
@@ -20,7 +20,7 @@ public class HelloWorldExample extends Dialog {
 		
 		// define a rule that reacts to a greeting intent by greeting the user
         Rule greetingRule = new SimpleRule(tokens -> {
-        	Token t = tokens[0];
+        	BasicToken t = tokens[0];
         	if (!t.isSet("userName")) {
         		System.out.println("Hello! What's your name?");
         	} else {
