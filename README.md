@@ -4,7 +4,8 @@ This project contains some code examples that show how to build a dialog system 
 
 - **HelloWorldExample**: Most basic example, which shows how to define simple dialog rules (<http://stepdp.sb.dfki.de/stepdp/rules/simple_rule/>).
 - **PatternConditionExample**: Shows how to define slightly more advanced conditions for dialog rules (<http://stepdp.sb.dfki.de/stepdp/rules/pattern_condition/>).
-- **DeclarativeTypeBasedFusionExample**: Shows how to define fusion rules. (<http://stepdp.sb.dfki.de/stepdp/rules/declarative_type_based_fusion/>).
+- **DeclarativeTypeBasedFusionExample**: Shows how to define fusion rules (<http://stepdp.sb.dfki.de/stepdp/rules/declarative_type_based_fusion/>).
+- **StateChartExample**: Shows how to use statecharts (<http://stepdp.sb.dfki.de/stepdp/statechart/>).
 
 ### How to run the examples
 
@@ -36,5 +37,8 @@ Here's an overview of which example JSON inputs to select for which example:
 - **DeclarativeTypeBasedFusionExample**:
     - *"add bring intent"* and additionally
     - *"add pizza"*
-  
+- **StateChartExample**:
+    - *"add greeting"* and then
+    - *"add goodbye"*
+
 Of course, you can also create your own JSON inputs or vary the ones that are provided to experiment a little. Just make sure that they comply with the semantic tree defined in the corresponding code example (or extend the semantic tree yourself).
