@@ -18,7 +18,7 @@ public class StateChartExample extends Dialog {
         this.getKB().addType(goodbyeIntent);
 
         // add state chart manager to board
-        this.getBlackboard().addStateChartManager("Greetings", StateChartExample.class.getResource("/greetings.scxml"));
+        this.getBlackboard().addStateChartManager("Greetings", "greetings.scxml");
 
         Rule greetingRule = new SimpleRule(tokens -> {
             System.out.println("Hello!");
