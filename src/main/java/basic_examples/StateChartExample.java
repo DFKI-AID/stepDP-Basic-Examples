@@ -1,5 +1,8 @@
 package basic_examples;
 
+import java.time.Duration;
+
+import de.dfki.step.blackboard.Condition;
 import de.dfki.step.blackboard.Rule;
 
 import de.dfki.step.blackboard.conditions.PatternCondition;
@@ -25,8 +28,11 @@ public class StateChartExample extends Dialog {
             // this rule triggers the transition "hello" which changes the state to the "End" state
             this.getBlackboard().getStateChartManager("Greetings").fireTransition("hello");
         }, "GreetingRule");
-        Pattern p = new PatternBuilder("GreetingIntent", this.getKB()).build();
-        greetingRule.setCondition(new PatternCondition(p));
+        Pattern greetingPattern = new PatternBuilder("GreetingIntent", this.getKB()).build();
+        Condition greetingCondition = new PatternCondition(greetingPattern);
+        // adjust maxTokenAge to avoid old tokens triggering rules on state change (see statechart documentation)
+        greetingCondition.setMaxTokenAge(Duration.ofSeconds(5).toMillis());
+        greetingRule.setCondition(greetingCondition);
         // add a rule manager that automatically (de-)activates the rule based on the statechart
         // the rule is generally not active except for the "Start" state
         SCRuleManager man = this.getBlackboard().getStateChartManager("Greetings").getRuleAssignment(false, new String[] {"Start"});
@@ -39,9 +45,11 @@ public class StateChartExample extends Dialog {
             // the "Start" state
             this.getBlackboard().getStateChartManager("Greetings").fireTransition("goodbye");
         }, "GoodbyeRule");
-        p = new PatternBuilder("GoodbyeIntent", this.getKB()).build();
-        goodbyeRule.setCondition(new PatternCondition(p));
-        // add a rule manager that automatically (de-)activates the based on the statechart
+        Pattern goodbyePattern = new PatternBuilder("GoodbyeIntent", this.getKB()).build();
+        Condition goodbyeCondition = new PatternCondition(goodbyePattern);
+        goodbyeCondition.setMaxTokenAge(Duration.ofSeconds(5).toMillis());
+        goodbyeRule.setCondition(goodbyeCondition);
+        // add a rule manager that automatically (de-)activates the rule based on the statechart
         // the rule is generally not active except for the "End" state
         man = this.getBlackboard().getStateChartManager("Greetings").getRuleAssignment(false, new String[]{"End"});
         goodbyeRule.addRuleManager(man);
