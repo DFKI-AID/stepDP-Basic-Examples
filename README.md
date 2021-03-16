@@ -27,7 +27,7 @@ To run the selected example, simply run the *Main* class in your IDE.
 
 While running an example, you can send input in JSON format to StepDP via its Debug Web UI, which runs on port 50000. The corresponding tab is called "Blackboard Input". For each code example, example JSON inputs should be available in the drop-down list:
 
-![Screenshot of Debug Web UI](docs/DebugUI.png)
+![Screenshot of StepDP Web GUI](docs/StepDPWebGUI.png)
 
 Here's an overview of which example JSON inputs to select for which example:
 - **HelloWorldExample**:
