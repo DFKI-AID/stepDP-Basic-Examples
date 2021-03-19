@@ -1,12 +1,12 @@
 # Basic Examples for StepDP Versions >= 0.9.0
 
-This project contains some code examples that show how to build a dialog system with StepDP. For some examples, there are more detailed descriptions in the [StepDP documentation](http://stepdp.sb.dfki.de). The respective links are provided below. The following examples are currently available:
+This project contains some code examples that show how to build a dialog system with StepDP. For some examples, there are more detailed descriptions in the [StepDP documentation](http://stepdp.sb.dfki.de) (only accessible from DFKI network / VPN). The respective links are provided below. The following examples are currently available:
 
 - **HelloWorldExample**: Most basic example, which shows how to define simple dialog rules (<http://stepdp.sb.dfki.de/stepdp/rules/simple_rule/>).
 - **PatternConditionExample**: Shows how to define slightly more advanced conditions for dialog rules (<http://stepdp.sb.dfki.de/stepdp/rules/pattern_condition/>).
 - **DeclarativeTypeBasedFusionExample**: Shows how to define fusion rules (<http://stepdp.sb.dfki.de/stepdp/rules/declarative_type_based_fusion/>).
 - **StateChartExample**: Shows how to use statecharts (<http://stepdp.sb.dfki.de/stepdp/statechart/>).
-- **KBExample**: An example of a dialog system using knowledge base objects. The corresponding json examples in the debug UI (see below) show how a KB object can be added as a token to the blackboard and how to add a token that holds a reference to a KB object. KB objects can be referenced by UUID (preferable due to uniqueness) or by their name. If the name is used, it has to be ensured that there are not multiple KB objects with the same name, because name uniqueness is not enforced automatically by the stepDP knowledge base.
+- **KBExample**: An example of a dialog system using knowledge base objects. For more information on how to add knowledge base instances to the blackboard, refer to <http://stepdp.sb.dfki.de/stepdp/kb/#how-to-add-kb-instances-to-the-blackboard>.
 
 ### How to run the examples
 
