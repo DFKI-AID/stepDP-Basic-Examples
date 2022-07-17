@@ -31,7 +31,7 @@
 	        </releases>
 	        <id>stepDP</id>
 	        <name>stepDP SB Server</name>
-	        <url>http://stepdp.sb.dfki.de/repo/</url>
+	        <url>https://umtl.dfki.de/stepdp/repo/</url>
 	        <layout>default</layout>
 	    </repository>
 	</repositories>
