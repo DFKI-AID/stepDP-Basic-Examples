@@ -11,6 +11,7 @@ import de.dfki.step.kb.IKBObject;
 import de.dfki.step.kb.graph.Graph;
 import de.dfki.step.kb.semantic.PropString;
 import de.dfki.step.kb.semantic.Type;
+import de.dfki.step.web.Controller;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,7 +20,14 @@ import java.util.UUID;
 public class GraphExampleType2 extends Dialog {
 
     public GraphExampleType2() throws Exception {
-
+        Controller.addExampleToken("add graph", "{\"type\": \"AddGraph\", \"graphName\":\"MyGraph\"}");
+        Controller.addExampleToken("add edge", "{\"type\": \"AddEdge\", \"graphName\":\"MyGraph\"," +
+                " \"childNode\":\"tree\", \"parentNode\":\"plant\", \"edgeLabel\":\"is\"}");
+        Controller.addExampleToken("get all nodes below a node", "{\"type\": \"GetNodesBelow\", \"graphName\":\"MyGraph\"," +
+                " \"nodeName\":\"plant\"}");
+        Controller.addExampleToken("save edges", "{\"type\": \"SaveEdges\", \"graphName\":\"MyGraph\"}");
+        Controller.addExampleToken("delete edge", "{\"type\": \"DeleteEdge\", \"graphName\":\"MyGraph\", \"edgeUUID\":\"EnterUUID\"}");
+        Controller.addExampleToken("load edges", "{\"type\": \"LoadEdges\", \"graphName\":\"MyGraph\"}");
         // define the relevant types for the example
 
         Type addGraph = new Type("AddGraph", this.getKB());
@@ -148,9 +156,11 @@ public class GraphExampleType2 extends Dialog {
             IToken token = tokens[0];
             Graph graph = this.getBlackboard().getGraph(token.getString("graphName"));
             IKBObject node = this.getKB().getInstance(token.getString("nodeName"));
-            System.out.println (node.getUUID());
 
-            System.out.println(graph.getNodesBelow(node));
+            for (IKBObject Node : graph.getNodesBelow(node))
+            {
+                System.out.println(Node.getName());
+            }
         }, "NodesBelowRule");
 
         Pattern p1 = new PatternBuilder("AddGraph", this.getKB()).build();
